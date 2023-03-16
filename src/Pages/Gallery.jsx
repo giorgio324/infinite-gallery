@@ -53,16 +53,27 @@ const Gallery = () => {
 
   return (
     <Wrapper>
-      <div>
-        {photos.map((photo) => (
-          <Link key={photo.id} to={`/user/${photo.id}`}>
-            <img src={photo.imageUrl} alt={photo.lastName} />
-            <h2>{photo.name}</h2>
-          </Link>
-        ))}
+      <div className='users'>
+        <div className='list'>
+          {photos.map((photo) => (
+            <div className='list-item' key={photo.id}>
+              <div className='list-item-content'>
+                <Link to={`/user/${photo.id}`}>
+                  <img
+                    src={`${photo.imageUrl}?v=${photo.id}`}
+                    alt={photo.name}
+                  />
+                  <div className='list-item-text'>
+                    <p className='name'>{`${photo.prefix} ${photo.name} ${photo.lastName}`}</p>
+                    <p className='title'>{photo.title}</p>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className='loading'>{isLoading && <p>Loading...</p>}</div>
       </div>
-
-      {isLoading && <p>Loading...</p>}
     </Wrapper>
   );
 };
@@ -70,21 +81,36 @@ const Gallery = () => {
 export default Gallery;
 
 const Wrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
   max-width: 1200px;
   margin: 0 auto;
-  div {
+
+  .list {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .list-item {
+    width: 50%;
+  }
+  .list-item-content {
+    margin: 10px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+  }
+  .list-item-text .name {
+    padding: 2px 10px;
+    font-weight: bold;
+  }
+  .list-item-text .title {
+    padding: 2px 10px;
+  }
+  img {
     width: 100%;
   }
-  div a {
-    width: 25%;
-    display: inline-block;
-  }
-  div img {
-    width: 100%;
+  @media screen and (min-width: 990px) {
+    .list-item {
+      width: 25%;
+    }
   }
 `;
