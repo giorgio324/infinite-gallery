@@ -1,43 +1,18 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import loadingImg from '../images/loading.gif';
+import GlobalContext from '../Context/GlobalContext';
 const Gallery = () => {
-  const [photos, setPhotos] = useState([]);
-  const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-
-  const fetchPictures = async () => {
-    setIsLoading(true);
-    try {
-      let url;
-      if (typeof page === 'object' && page.nextPage) {
-        url = `http://sweeftdigital-intern.eu-central-1.elasticbeanstalk.com/user/${page.nextPage}/20`;
-      } else {
-        url = `http://sweeftdigital-intern.eu-central-1.elasticbeanstalk.com/user/${page}/20`;
-      }
-      const response = await fetch(url);
-
-      const { pagination, list } = await response.json();
-
-      setPhotos((prevPhotos) => [...prevPhotos, ...list]);
-      setPage(pagination);
-
-      if (page.current * page.pageSize >= page.total - page.pageSize) {
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-    setIsLoading(false);
-  };
+  const { fetchPictures, photos, isLoading, hasMore } =
+    useContext(GlobalContext);
   // fetch photos when the page loads for the first time
   useEffect(() => {
     fetchPictures();
   }, []);
   // observer function
+  // fetch photos when user sees the last user box
   const observer = useRef();
   const lastElement = useCallback(
     (node) => {
@@ -125,7 +100,6 @@ const Wrapper = styled.div`
   margin: 0 auto;
   .loading {
     text-align: center;
-
     display: flex;
     justify-content: center;
     align-items: center;
