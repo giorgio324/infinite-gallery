@@ -1,17 +1,18 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-
+import loadingImg from '../images/loading.gif';
 const Gallery = () => {
   const [photos, setPhotos] = useState([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  // fetch photos when the page loads for the first time
+  const [hasMore, setHasMore] = useState(true);
+
   const fetchPictures = async () => {
+    setIsLoading(true);
     try {
       let url;
-      setIsLoading(true);
       if (typeof page === 'object' && page.nextPage) {
         url = `http://sweeftdigital-intern.eu-central-1.elasticbeanstalk.com/user/${page.nextPage}/20`;
       } else {
@@ -23,33 +24,43 @@ const Gallery = () => {
 
       setPhotos((prevPhotos) => [...prevPhotos, ...list]);
       setPage(pagination);
-      console.log(photos);
-      console.log(page);
-      console.log(pagination);
 
-      setIsLoading(false);
+      if (page.current * page.pageSize >= page.total - page.pageSize) {
+        setHasMore(false);
+      }
     } catch (error) {
-      setIsLoading(false);
       console.log(error);
     }
+    setIsLoading(false);
   };
+  // fetch photos when the page loads for the first time
   useEffect(() => {
     fetchPictures();
   }, []);
-  const handleScroll = () => {
-    const scrollHeight = document.documentElement.scrollHeight;
-    const scrollTop = document.documentElement.scrollTop;
-    const clientHeight = document.documentElement.clientHeight;
+  // observer function
+  const observer = useRef();
+  const lastElement = useCallback(
+    (node) => {
+      if (isLoading || photos.length === 0) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            if (hasMore) {
+              fetchPictures();
+            }
+          }
+        },
+        {
+          rootMargin: '0px',
+          threshold: 1.0,
+        }
+      );
+      if (node) observer.current.observe(node);
+    },
+    [isLoading]
+  );
 
-    if (scrollTop + clientHeight >= scrollHeight - 5 && !isLoading) {
-      fetchPictures();
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isLoading]);
   if (photos.length === 0) {
     return (
       <Wrapper>
@@ -61,25 +72,46 @@ const Gallery = () => {
     <Wrapper>
       <div className='users'>
         <div className='list'>
-          {photos.map((photo) => (
-            <div className='list-item' key={photo.id}>
-              <div className='list-item-content'>
-                <Link to={`/user/${photo.id}`}>
-                  <img
-                    src={`${photo.imageUrl}?v=${photo.id}`}
-                    alt={photo.name}
-                  />
-                  <div className='list-item-text'>
-                    <p className='name'>{`${photo.prefix} ${photo.name} ${photo.lastName}`}</p>
-                    <p className='title'>{photo.title}</p>
+          {photos.map((photo, index) => {
+            if (photos.length === index + 1) {
+              return (
+                <div className='list-item' key={photo.id} ref={lastElement}>
+                  <div className='list-item-content'>
+                    <Link to={`/user/${photo.id}`}>
+                      <img
+                        src={`${photo.imageUrl}?v=${photo.id}`}
+                        alt={photo.name}
+                      />
+                      <div className='list-item-text'>
+                        <p className='name'>{`${photo.prefix} ${photo.name} ${photo.lastName}`}</p>
+                        <p className='title'>{photo.title}</p>
+                      </div>
+                    </Link>
                   </div>
-                </Link>
-              </div>
-            </div>
-          ))}
+                </div>
+              );
+            } else {
+              return (
+                <div className='list-item' key={photo.id}>
+                  <div className='list-item-content'>
+                    <Link to={`/user/${photo.id}`}>
+                      <img
+                        src={`${photo.imageUrl}?v=${photo.id}`}
+                        alt={photo.name}
+                      />
+                      <div className='list-item-text'>
+                        <p className='name'>{`${photo.prefix} ${photo.name} ${photo.lastName}`}</p>
+                        <p className='title'>{photo.title}</p>
+                      </div>
+                    </Link>
+                  </div>
+                </div>
+              );
+            }
+          })}
         </div>
         <div className='loading'>
-          <p>loading ...</p>
+          <img src={loadingImg} alt='' />
         </div>
       </div>
     </Wrapper>
@@ -93,10 +125,14 @@ const Wrapper = styled.div`
   margin: 0 auto;
   .loading {
     text-align: center;
-    height: 60px;
+
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+  .loading img {
+    width: 100px;
+    height: 100px;
   }
   .list {
     display: flex;
