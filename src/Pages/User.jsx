@@ -27,7 +27,7 @@ function ImagePage() {
 
   return (
     <div>
-      <img src={user.imageUrl} alt='Lorem Picsum' />
+      <img src={`${user.imageUrl}?v=${id}`} alt='Lorem Picsum' />
       <h1>{user.name}</h1>
       <h1>{user.title}</h1>
     </div>

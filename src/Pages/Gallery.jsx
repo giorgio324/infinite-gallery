@@ -50,7 +50,13 @@ const Gallery = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isLoading]);
-
+  if (photos.length === 0) {
+    return (
+      <Wrapper>
+        <p>No Users</p>
+      </Wrapper>
+    );
+  }
   return (
     <Wrapper>
       <div className='users'>
@@ -72,7 +78,9 @@ const Gallery = () => {
             </div>
           ))}
         </div>
-        <div className='loading'>{isLoading && <p>Loading...</p>}</div>
+        <div className='loading'>
+          <p>loading ...</p>
+        </div>
       </div>
     </Wrapper>
   );
@@ -83,7 +91,13 @@ export default Gallery;
 const Wrapper = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-
+  .loading {
+    text-align: center;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   .list {
     display: flex;
     flex-direction: row;
