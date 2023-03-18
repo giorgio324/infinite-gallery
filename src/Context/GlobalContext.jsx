@@ -21,7 +21,6 @@ export const GlobalProvider = ({ children }) => {
       );
       const data = await response.json();
       setUser(data);
-      console.log(data);
     } catch (error) {
       console.log(error);
     }
@@ -41,6 +40,12 @@ export const GlobalProvider = ({ children }) => {
 
       setFriends((prevfriends) => [...prevfriends, ...list]);
       setFriendsPage(pagination);
+      if (
+        friendsPage.current * friendsPage.pageSize >=
+        friendsPage.total - friendsPage.pageSize
+      ) {
+        setHasMoreFriends(false);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -52,7 +57,6 @@ export const GlobalProvider = ({ children }) => {
     setHasMoreFriends(true);
     fetchFriends(id);
     fetchUser(id);
-    console.log('did');
   };
   const fetchPictures = async () => {
     setIsLoading(true);

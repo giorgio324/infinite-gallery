@@ -18,7 +18,6 @@ function ImagePage() {
   } = useContext(GlobalContext);
 
   useEffect(() => {
-    console.log('idchanged');
     clearForNewUser(id);
   }, [id]);
   const observer = useRef();
@@ -29,7 +28,6 @@ function ImagePage() {
       observer.current = new IntersectionObserver(
         (entries) => {
           if (entries[0].isIntersecting) {
-            console.log('interc');
             if (hasMoreFriends) {
               fetchFriends(id);
             }
